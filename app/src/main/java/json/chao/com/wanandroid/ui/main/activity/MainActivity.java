@@ -20,6 +20,8 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.xuexiang.xupdate.XUpdate;
+
 import java.util.ArrayList;
 
 import butterknife.BindView;
@@ -28,10 +30,7 @@ import json.chao.com.wanandroid.R;
 import json.chao.com.wanandroid.app.Constants;
 import json.chao.com.wanandroid.base.activity.BaseActivity;
 import json.chao.com.wanandroid.base.fragment.BaseFragment;
-import json.chao.com.wanandroid.component.RxBus;
 import json.chao.com.wanandroid.contract.main.MainContract;
-import json.chao.com.wanandroid.core.event.LoginEvent;
-import json.chao.com.wanandroid.core.http.cookies.CookiesManager;
 import json.chao.com.wanandroid.presenter.main.MainPresenter;
 import json.chao.com.wanandroid.ui.hierarchy.fragment.KnowledgeHierarchyFragment;
 import json.chao.com.wanandroid.ui.main.fragment.CollectFragment;
@@ -41,6 +40,7 @@ import json.chao.com.wanandroid.ui.mainpager.fragment.MainPagerFragment;
 import json.chao.com.wanandroid.ui.navigation.fragment.NavigationFragment;
 import json.chao.com.wanandroid.ui.project.fragment.ProjectFragment;
 import json.chao.com.wanandroid.ui.main.fragment.SearchDialogFragment;
+import json.chao.com.wanandroid.ui.wx.fragment.WxArticleFragment;
 import json.chao.com.wanandroid.utils.BottomNavigationViewHelper;
 import json.chao.com.wanandroid.utils.CommonAlertDialog;
 import json.chao.com.wanandroid.utils.CommonUtils;
@@ -72,6 +72,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
     private TextView mUsTv;
     private MainPagerFragment mMainPagerFragment;
     private KnowledgeHierarchyFragment mKnowledgeHierarchyFragment;
+    private WxArticleFragment mWxArticleFragment;
     private NavigationFragment mNavigationFragment;
     private ProjectFragment mProjectFragment;
     private int mLastFgIndex;
@@ -102,6 +103,9 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
 
     @Override
     protected void initEventAndData() {
+//        XUpdate.newBuild(mActivity)
+//                .updateUrl(Constants.UPDATE_URL)
+//                .update();
     }
 
     @Override
@@ -190,6 +194,13 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
     }
 
     @Override
+    public void showLogoutSuccess() {
+        CommonAlertDialog.newInstance().cancelDialog(true);
+        mNavigationView.getMenu().findItem(R.id.nav_item_logout).setVisible(false);
+        startActivity(new Intent(this, LoginActivity.class));
+    }
+
+    @Override
     public void showLoginView() {
         if (mNavigationView == null) {
             return;
@@ -269,12 +280,16 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
                     loadPager(getString(R.string.knowledge_hierarchy), 1,
                             mKnowledgeHierarchyFragment, Constants.TYPE_KNOWLEDGE);
                     break;
+                case R.id.tab_wx_article:
+                    loadPager(getString(R.string.wx_article), 2,
+                            mWxArticleFragment, Constants.TYPE_WX_ARTICLE);
+                    break;
                 case R.id.tab_navigation:
-                    loadPager(getString(R.string.navigation), 2,
+                    loadPager(getString(R.string.navigation), 3,
                             mNavigationFragment, Constants.TYPE_NAVIGATION);
                     break;
                 case R.id.tab_project:
-                    loadPager(getString(R.string.project), 3,
+                    loadPager(getString(R.string.project), 4,
                             mProjectFragment, Constants.TYPE_PROJECT);
                     break;
                 default:
@@ -303,6 +318,10 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
                     mKnowledgeHierarchyFragment.jumpToTheTop();
                 }
                 break;
+            case Constants.TYPE_WX_ARTICLE:
+                if (mWxArticleFragment != null) {
+                    mWxArticleFragment.jumpToTheTop();
+                }
             case Constants.TYPE_NAVIGATION:
                 if (mNavigationFragment != null) {
                     mNavigationFragment.jumpToTheTop();
@@ -320,12 +339,14 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
 
     private void initFragments() {
         mKnowledgeHierarchyFragment = KnowledgeHierarchyFragment.getInstance(null, null);
+        mWxArticleFragment = WxArticleFragment.getInstance(null, null);
         mNavigationFragment = NavigationFragment.getInstance(null, null);
         mProjectFragment = ProjectFragment.getInstance(null, null);
         CollectFragment collectFragment = CollectFragment.getInstance(null, null);
         SettingFragment settingFragment = SettingFragment.getInstance(null, null);
 
         mFragments.add(mKnowledgeHierarchyFragment);
+        mFragments.add(mWxArticleFragment);
         mFragments.add(mNavigationFragment);
         mFragments.add(mProjectFragment);
         mFragments.add(collectFragment);
@@ -354,7 +375,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
         mLastFgIndex = position;
         ft.hide(lastFg);
         if (!targetFg.isAdded()) {
-            getSupportFragmentManager().beginTransaction().remove(targetFg).commit();
+            getSupportFragmentManager().beginTransaction().remove(targetFg).commitAllowingStateLoss();
             ft.add(R.id.fragment_group, targetFg);
         }
         ft.show(targetFg);
@@ -426,20 +447,10 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
                 this, getString(R.string.logout_tint),
                 getString(R.string.ok),
                 getString(R.string.no),
-                v -> confirmLogout(),
+                v -> mPresenter.logout(),
                 v -> CommonAlertDialog.newInstance().cancelDialog(true));
     }
 
-    private void confirmLogout() {
-        CommonAlertDialog.newInstance().cancelDialog(true);
-        mNavigationView.getMenu().findItem(R.id.nav_item_logout).setVisible(false);
-        mPresenter.setLoginStatus(false);
-        mPresenter.setLoginAccount("");
-        mPresenter.setLoginPassword("");
-        CookiesManager.clearAllCookies();
-        RxBus.getDefault().post(new LoginEvent(false));
-        startActivity(new Intent(this, LoginActivity.class));
-    }
 
 
 }

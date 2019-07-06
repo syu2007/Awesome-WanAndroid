@@ -18,6 +18,8 @@ public class Constants {
 
     public static final String MY_SHARED_PREFERENCE = "my_shared_preference";
 
+    public static final String UPDATE_URL = "https://github.com/JsonChao/Awesome-WanAndroid/blob/master/app/release/app-release.apk";
+
     /**
      * url
      */
@@ -37,13 +39,15 @@ public class Constants {
 
     public static final int TYPE_KNOWLEDGE = 1;
 
-    public static final int TYPE_NAVIGATION = 2;
+    public static final int TYPE_WX_ARTICLE = 2;
 
-    public static final int TYPE_PROJECT = 3;
+    public static final int TYPE_NAVIGATION = 3;
 
-    public static final int TYPE_COLLECT = 4;
+    public static final int TYPE_PROJECT = 4;
 
-    public static final int TYPE_SETTING = 5;
+    public static final int TYPE_COLLECT = 5;
+
+    public static final int TYPE_SETTING = 6;
 
 
     /**
@@ -143,5 +147,7 @@ public class Constants {
     public static final String NO_IMAGE_STATE = "no_image_state";
 
     public static final String NIGHT_MODE_STATE = "night_mode_state";
+
+
 
 }
